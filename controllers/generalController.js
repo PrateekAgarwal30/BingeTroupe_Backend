@@ -25,39 +25,47 @@ const getHomeConfig = async (req, res) => {
   try {
     let homeConfig = {};
     const genres = [
-      "action",
-      "adventure",
-      "comedy",
-      "crime",
-      "drama",
-      "fantasy",
-      "historical",
-      "horror",
-      "mystery",
-      "philosophical",
-      "political",
-      "romance",
-      "sci_fi",
-      "thriller"
+      { id: "action", name: "Action" },
+      { id: "adventure", name: "Adventure" },
+      { id: "comedy", name: "Comedy" },
+      { id: "crime", name: "Crime" },
+      { id: "drama", name: "Drama" },
+      { id: "fantasy", name: "Fantasy" },
+      { id: "historical", name: "Historical" },
+      { id: "horror", name: "Horror" },
+      { id: "mystery", name: "Mystery" },
+      { id: "philosophical", name: "Philosophical" },
+      { id: "political", name: "Political" },
+      { id: "romance", name: "Romance" },
+      { id: "sci_fi", name: "Science Fiction" },
+      { id: "thriller", name: "Thriller" }
     ];
     //Have to write API for Banner
     homeConfig.banners = [
       {
         thumbnail:
-          "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885_1280.jpg"
+          "https://storage.googleapis.com/brunch-pvt-ltd.appspot.com/banners/sintel-poster.jpg"
       },
       {
         thumbnail:
-          "https://www.telegraph.co.uk/content/dam/music/2016/09/23/nirvana_trans_NvBQzQNjv4Bqeo_i_u9APj8RuoebjoAHt0k9u7HhRJvuo-ZLenGRumA.jpg?imwidth=1400"
+          "https://storage.googleapis.com/brunch-pvt-ltd.appspot.com/banners/sintel-poster.jpg"
+      },
+      {
+        thumbnail:
+          "https://storage.googleapis.com/brunch-pvt-ltd.appspot.com/banners/sintel-poster.jpg"
+      },
+      {
+        thumbnail:
+          "https://storage.googleapis.com/brunch-pvt-ltd.appspot.com/banners/sintel-poster.jpg"
       }
     ];
     homeConfig.genresData = [];
     for (var i = 0; i < genres.length; i++) {
-      let data = await Content.find({ status: "active", genres: genres[i] });
+      let data = await Content.find({ status: "active", genres: genres[i].id });
       if (data && data.length) {
         homeConfig.genresData.push({
-          title: genres[i],
-          data: data
+          title: genres[i].name,
+          data: [{ flatListData: data }]
         });
       }
     }
