@@ -1,0 +1,4 @@
+{
+  "db_connection" : "mongodb://localhost:27017/bingetroupe",
+  "jwtPrivateKey" : "12345"
+}

@@ -1,0 +1,4 @@
+{
+  "jwtPrivateKey": "bingeTroupe_jwtPrivateKey",
+  "db_connection": "db_connection"
+}
