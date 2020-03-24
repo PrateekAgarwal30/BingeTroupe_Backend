@@ -1,4 +1,5 @@
 {
   "jwtPrivateKey": "bingeTroupe_jwtPrivateKey",
-  "db_connection": "db_connection"
+  "db_connection": "db_connection",
+  "heroku_ping_url": "heroku_ping_url"
 }

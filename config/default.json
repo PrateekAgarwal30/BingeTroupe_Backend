@@ -1,4 +1,5 @@
 {
   "db_connection" : "mongodb://localhost:27017/bingetroupe",
-  "jwtPrivateKey" : "12345"
+  "jwtPrivateKey" : "12345",
+  "heroku_ping_url": "http://localhost:5000"
 }
