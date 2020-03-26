@@ -24,8 +24,26 @@ const getContent = async (req, res) => {
 const getHomeConfig = async (req, res) => {
   try {
     let homeConfig = {};
-    const genres = await Content.distinct("genres");
-    // console.log("genres", genres);
+    const genresAggregate = await Content.aggregate([
+      { $match: { status: "active" } },
+      { $unwind: "$genres" },
+      {
+        $group: {
+          _id: "$genres",
+          count: { $sum: 1 },
+          data: { $push: "$$ROOT" }
+        }
+      },
+      {
+        $addFields: {
+          data: {
+            $slice: ["$data", 0, 3]
+          }
+        }
+      },
+      { $sort: { count: -1 } }
+    ]);
+
     const genresTitle = {
       action: "Action",
       adventure: "Adventure",
@@ -42,7 +60,7 @@ const getHomeConfig = async (req, res) => {
       sci_fi: "Science Fiction",
       thriller: "Thriller"
     };
-    //Have to write API for Banner
+
     homeConfig.banners = [
       {
         thumbnail:
@@ -61,15 +79,16 @@ const getHomeConfig = async (req, res) => {
           "https://storage.googleapis.com/brunch-pvt-ltd.appspot.com/banners/sintel-poster.jpg"
       }
     ];
+
     homeConfig.genresData = [];
-    for (var i = 0; i < genres.length; i++) {
-      let data = await Content.find({ status: "active", genres: genres[i] },"-__v -body -genres -status").limit(5);
-      if (data && data.length) {
-        homeConfig.genresData.push({
-          title: genresTitle[genres[i]],
-          data: [{ flatListData: data }]
-        });
-      }
+
+    for (var i = 0; i < genresAggregate.length; i++) {
+      homeConfig.genresData.push({
+        title: genresTitle[genresAggregate[i]._id],
+        count: genresAggregate[i].count,
+        genreId: genresAggregate[i]._id,
+        data: [{ flatListData: genresAggregate[i].data }]
+      });
     }
     res.status(200).send({
       _status: "success",
