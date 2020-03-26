@@ -24,22 +24,24 @@ const getContent = async (req, res) => {
 const getHomeConfig = async (req, res) => {
   try {
     let homeConfig = {};
-    const genres = [
-      { id: "action", name: "Action" },
-      { id: "adventure", name: "Adventure" },
-      { id: "comedy", name: "Comedy" },
-      { id: "crime", name: "Crime" },
-      { id: "drama", name: "Drama" },
-      { id: "fantasy", name: "Fantasy" },
-      { id: "historical", name: "Historical" },
-      { id: "horror", name: "Horror" },
-      { id: "mystery", name: "Mystery" },
-      { id: "philosophical", name: "Philosophical" },
-      { id: "political", name: "Political" },
-      { id: "romance", name: "Romance" },
-      { id: "sci_fi", name: "Science Fiction" },
-      { id: "thriller", name: "Thriller" }
-    ];
+    const genres = await Content.distinct("genres");
+    // console.log("genres", genres);
+    const genresTitle = {
+      action: "Action",
+      adventure: "Adventure",
+      comedy: "Comedy",
+      crime: "Crime",
+      drama: "Drama",
+      fantasy: "Fantasy",
+      historical: "Historical",
+      horror: "Horror",
+      mystery: "Mystery",
+      philosophical: "Philosophical",
+      political: "Political",
+      romance: "Romance",
+      sci_fi: "Science Fiction",
+      thriller: "Thriller"
+    };
     //Have to write API for Banner
     homeConfig.banners = [
       {
@@ -61,10 +63,10 @@ const getHomeConfig = async (req, res) => {
     ];
     homeConfig.genresData = [];
     for (var i = 0; i < genres.length; i++) {
-      let data = await Content.find({ status: "active", genres: genres[i].id });
+      let data = await Content.find({ status: "active", genres: genres[i] },"-__v -body -genres -status").limit(5);
       if (data && data.length) {
         homeConfig.genresData.push({
-          title: genres[i].name,
+          title: genresTitle[genres[i]],
           data: [{ flatListData: data }]
         });
       }
