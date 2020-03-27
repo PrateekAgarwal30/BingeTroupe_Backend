@@ -101,7 +101,62 @@ const getHomeConfig = async (req, res) => {
     });
   }
 };
+
+const getSearchSuggestion = async (req, res) => {
+  try {
+    const searchTest = await Content.find(
+      {
+        $text: { $search: `${req.query.searchText || ""}` }
+      },
+      { score: { $meta: "textScore" }, name: 1 }
+    )
+      .sort({ score: { $meta: "textScore" } })
+      .limit(15);
+    res.status(200).send({
+      _status: "success",
+      _data: searchTest
+    });
+  } catch (ex) {
+    res.status(400).send({
+      _status: "fail",
+      _message: ex.message
+    });
+  }
+};
+
+const getSearchSuggestioPartial = async (req, res) => {
+  try {
+    const searchResult = await Content.find(
+      {
+        $or: [
+          { $text: { $search: `${req.query.searchText || ""}` } },
+          { name: { $regex: `${req.query.searchText || ""}`, $options: "i" } },
+          {
+            subtitle: { $regex: `${req.query.searchText || ""}`, $options: "i" }
+          },
+          { body: { $regex: `${req.query.searchText || ""}`, $options: "i" } }
+        ]
+      },
+      { score: { $meta: "textScore" }, name: 1 }
+    )
+      .sort({ score: { $meta: "textScore" } })
+      .limit(10);
+    const formattedData = _.map(searchResult, result => result.name);
+    res.status(200).send({
+      _status: "success",
+      _data: formattedData
+    });
+  } catch (ex) {
+    res.status(400).send({
+      _status: "fail",
+      _message: ex.message
+    });
+  }
+};
+
 module.exports = {
   getContent,
-  getHomeConfig
+  getHomeConfig,
+  getSearchSuggestion,
+  getSearchSuggestioPartial
 };

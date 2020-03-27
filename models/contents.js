@@ -5,7 +5,8 @@ const contentSchema = new mongoose.Schema({
     type: String,
     minlength: 3,
     maxlength: 50,
-    required: true
+    required: true,
+    index: true
   },
   status: {
     type: String,
@@ -20,13 +21,15 @@ const contentSchema = new mongoose.Schema({
   subtitle: {
     type: String,
     minlength: 5,
-    maxlength: 150
+    maxlength: 150,
+    index: true
   },
   body: {
     type: String,
     required: true,
     minlength: 5,
-    maxlength: 300
+    maxlength: 300,
+    index: true
   },
   contentImageUrl: {
     type: String,
@@ -61,11 +64,33 @@ const contentSchema = new mongoose.Schema({
       ],
       required: true
     }
-  ]
+  ],
+  durationinMillSec: {
+    type: Number
+  },
+  uploadDate: {
+    type: Date
+  },
+  releaseDate: {
+    type: Date
+  },
+  language: {
+    type: String,
+    enum: ["english", "hindi"]
+  }
 });
 
+contentSchema.index(
+  { name: "text", subtitle: "text", body: "text" },
+  {
+    weights: {
+      name: 4,
+      subtitle: 2
+    },
+    name: "SearchIndex"
+  }
+);
 const Content = mongoose.model("contents", contentSchema);
-
 function validateContent(content) {
   const schema = {
     name: Joi.string()
