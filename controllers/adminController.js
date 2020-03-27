@@ -36,16 +36,20 @@ const postNewContent = async (req, res) => {
       "body",
       "genres"
     ]);
-    if(contentDeatils.genres && contentDeatils.genres[0] === "[" && contentDeatils.genres[contentDeatils.genres.length-1] === "]"){
-      var replace= contentDeatils.genres.replace(/[\[\]]/g,'');
-      contentDeatils.genres = replace.split(',');
+    if (
+      contentDeatils.genres &&
+      contentDeatils.genres[0] === "[" &&
+      contentDeatils.genres[contentDeatils.genres.length - 1] === "]"
+    ) {
+      var replace = contentDeatils.genres.replace(/[\[\]]/g, "");
+      contentDeatils.genres = replace.split(",");
     }
     let { error } = validateContent(contentDeatils);
     if (error) {
       throw new Error(error);
     }
     const imageThumbBuffer = await sharp(contentImage[0].buffer)
-      .png({ progressive: true, force: false })
+      .webp({ quality: 25 })
       .toBuffer();
     const imageThumbInfo = {
       buffer: imageThumbBuffer,
