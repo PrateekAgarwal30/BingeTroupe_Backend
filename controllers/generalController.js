@@ -1,5 +1,22 @@
 const _ = require("lodash");
 const { Content } = require("../models/contents");
+const genresTitle = {
+  action: "Action",
+  adventure: "Adventure",
+  comedy: "Comedy",
+  crime: "Crime",
+  drama: "Drama",
+  fantasy: "Fantasy",
+  historical: "Historical",
+  horror: "Horror",
+  mystery: "Mystery",
+  philosophical: "Philosophical",
+  political: "Political",
+  romance: "Romance",
+  sci_fi: "Science Fiction",
+  thriller: "Thriller"
+};
+
 const getContent = async (req, res) => {
   try {
     let contents = null;
@@ -37,29 +54,12 @@ const getHomeConfig = async (req, res) => {
       {
         $addFields: {
           data: {
-            $slice: ["$data", 0, 3]
+            $slice: ["$data", 0, 4]
           }
         }
       },
       { $sort: { count: -1 } }
     ]);
-
-    const genresTitle = {
-      action: "Action",
-      adventure: "Adventure",
-      comedy: "Comedy",
-      crime: "Crime",
-      drama: "Drama",
-      fantasy: "Fantasy",
-      historical: "Historical",
-      horror: "Horror",
-      mystery: "Mystery",
-      philosophical: "Philosophical",
-      political: "Political",
-      romance: "Romance",
-      sci_fi: "Science Fiction",
-      thriller: "Thriller"
-    };
 
     homeConfig.banners = [
       {
@@ -104,28 +104,6 @@ const getHomeConfig = async (req, res) => {
 
 const getSearchSuggestion = async (req, res) => {
   try {
-    const searchTest = await Content.find(
-      {
-        $text: { $search: `${req.query.searchText || ""}` }
-      },
-      { score: { $meta: "textScore" }, name: 1 }
-    )
-      .sort({ score: { $meta: "textScore" } })
-      .limit(15);
-    res.status(200).send({
-      _status: "success",
-      _data: searchTest
-    });
-  } catch (ex) {
-    res.status(400).send({
-      _status: "fail",
-      _message: ex.message
-    });
-  }
-};
-
-const getSearchSuggestioPartial = async (req, res) => {
-  try {
     const searchResult = await Content.find(
       {
         $or: [
@@ -137,11 +115,22 @@ const getSearchSuggestioPartial = async (req, res) => {
           { body: { $regex: `${req.query.searchText || ""}`, $options: "i" } }
         ]
       },
-      { score: { $meta: "textScore" }, name: 1 }
+      {
+        score: { $meta: "textScore" },
+        name: 1,
+        contentThumbnailUrl: 1,
+        genres: 1
+      }
     )
       .sort({ score: { $meta: "textScore" } })
       .limit(10);
-    const formattedData = _.map(searchResult, result => result.name);
+    const formattedData = _.map(searchResult, result => {
+      result.genres = _.map(
+        result.genres,
+        genre => (genre = genresTitle[genre])
+      );
+      return result;
+    });
     res.status(200).send({
       _status: "success",
       _data: formattedData
@@ -157,6 +146,5 @@ const getSearchSuggestioPartial = async (req, res) => {
 module.exports = {
   getContent,
   getHomeConfig,
-  getSearchSuggestion,
-  getSearchSuggestioPartial
+  getSearchSuggestion
 };
