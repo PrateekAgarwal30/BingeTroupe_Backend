@@ -4,21 +4,36 @@ const sharp = require("sharp");
 const uploadImageToStorage = require("../utils/uploadImageToStorage");
 const { Content, validateContent } = require("../models/contents");
 const postNewContent = async (req, res) => {
-  const contentImage = req.files.contentImage;
+  const contentHortizontalImg = req.files.contentHortizontalImg;
+  const contentVerticalImg = req.files.contentVerticalImg;
   const contentVideo = req.files.contentVideo;
   try {
     if (
-      !contentImage ||
-      !contentImage.length ||
+      !contentHortizontalImg ||
+      !contentHortizontalImg.length ||
       !(
-        contentImage[0].mimetype === "image/jpeg" ||
-        contentImage[0].mimetype === "image/png"
+        contentHortizontalImg[0].mimetype === "image/jpeg" ||
+        contentHortizontalImg[0].mimetype === "image/png"
       )
     ) {
       throw new Error(
-        "Content Image not passed.\nPlease select png/jpg file only."
+        "Content Hortizontal Image not passed.\nPlease select png/jpg file only."
       );
     }
+
+    if (
+      !contentVerticalImg ||
+      !contentVerticalImg.length ||
+      !(
+        contentVerticalImg[0].mimetype === "image/jpeg" ||
+        contentVerticalImg[0].mimetype === "image/png"
+      )
+    ) {
+      throw new Error(
+        "Content Vertical Image not passed.\nPlease select png/jpg file only."
+      );
+    }
+
     if (
       !contentVideo ||
       !contentVideo.length ||
@@ -34,7 +49,10 @@ const postNewContent = async (req, res) => {
       "type",
       "subtitle",
       "body",
-      "genres"
+      "genres",
+      "durationinMillSec",
+      "releaseDate",
+      "language",
     ]);
     if (
       contentDeatils.genres &&
@@ -48,40 +66,77 @@ const postNewContent = async (req, res) => {
     if (error) {
       throw new Error(error);
     }
-    const imageThumbBuffer = await sharp(contentImage[0].buffer)
+
+    const contentHzImgBuffer = await sharp(contentHortizontalImg[0].buffer)
       .webp({ quality: 25 })
       .toBuffer();
-    const imageThumbInfo = {
-      buffer: imageThumbBuffer,
+    const contentHortizontalImgInfo = {
+      buffer: contentHzImgBuffer,
       mimetype: "image/png",
-      uploadFileName: `contentThumbmail/content_${Date.now()}`
+      uploadFileName: `contentHortizontalImg/content_${Date.now()}`,
     };
-    const uploadThumbnailImageResponse = await uploadImageToStorage(
-      imageThumbInfo
+
+    const uploadHzImgRes = await uploadImageToStorage(
+      contentHortizontalImgInfo
     );
-    contentImage[0].uploadFileName = `contentImage/content_${Date.now()}`;
-    const uploadImageResponse = await uploadImageToStorage(contentImage[0]);
+
+    const contentHzTmbImgBuffer = await sharp(contentHzImgBuffer)
+      .webp({ quality: 1 })
+      .toBuffer();
+    const contentHortizontalTmbImgInfo = {
+      buffer: contentHzTmbImgBuffer,
+      mimetype: "image/png",
+      uploadFileName: `contentHortizontalTmbImg/content_${Date.now()}`,
+    };
+
+    const uploadHzTmbImgRes = await uploadImageToStorage(
+      contentHortizontalTmbImgInfo
+    );
+
+    const contentVertImgBuffer = await sharp(contentVerticalImg[0].buffer)
+      .webp({ quality: 25 })
+      .toBuffer();
+    const contentVerticalImgInfo = {
+      buffer: contentVertImgBuffer,
+      mimetype: "image/png",
+      uploadFileName: `contentVerticalImg/content_${Date.now()}`,
+    };
+    const uploadVertImgRes = await uploadImageToStorage(contentVerticalImgInfo);
+    const contentVertTmbImgBuffer = await sharp(contentVertImgBuffer)
+      .webp({ quality: 1 })
+      .toBuffer();
+    const contentVerticalTmbImgInfo = {
+      buffer: contentVertTmbImgBuffer,
+      mimetype: "image/png",
+      uploadFileName: `contentVerticalTmbImg/content_${Date.now()}`,
+    };
+    const uploadVertTmbImgRes = await uploadImageToStorage(
+      contentVerticalTmbImgInfo
+    );
     contentVideo[0].uploadFileName = `contentVideo/content_${Date.now()}`;
     const uploadVideoResponse = await uploadImageToStorage(contentVideo[0]);
-    contentDeatils["contentImageUrl"] = uploadImageResponse;
-    contentDeatils["contentThumbnailUrl"] = uploadThumbnailImageResponse;
+
+    contentDeatils["contentTmbImgHorizontalUrl"] = uploadHzTmbImgRes;
+    contentDeatils["contentTmbImgVeritcalUrl"] = uploadVertTmbImgRes;
+    contentDeatils["contentImgVeritcalUrl"] = uploadVertImgRes;
+    contentDeatils["contentImgHorizontalUrl"] = uploadHzImgRes;
     contentDeatils["contentVideoUrl"] = uploadVideoResponse;
     const newContent = new Content({
-      ...contentDeatils
+      ...contentDeatils,
     });
     await newContent.save();
     res.status(200).send({
       _status: "success",
-      _data: { newContent }
+      _data: { newContent },
     });
   } catch (ex) {
     res.status(400).send({
       _status: "fail",
-      _message: ex.message
+      _message: ex.message,
     });
   }
 };
 
 module.exports = {
-  postNewContent
+  postNewContent,
 };

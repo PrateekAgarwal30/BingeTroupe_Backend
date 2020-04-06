@@ -14,7 +14,7 @@ const genresTitle = {
   political: "Political",
   romance: "Romance",
   sci_fi: "Science Fiction",
-  thriller: "Thriller"
+  thriller: "Thriller",
 };
 
 const getContent = async (req, res) => {
@@ -28,12 +28,12 @@ const getContent = async (req, res) => {
     }
     res.status(200).send({
       _status: "success",
-      _data: contents
+      _data: contents,
     });
   } catch (ex) {
     res.status(400).send({
       _status: "fail",
-      _message: ex.message
+      _message: ex.message,
     });
   }
 };
@@ -48,36 +48,36 @@ const getHomeConfig = async (req, res) => {
         $group: {
           _id: "$genres",
           count: { $sum: 1 },
-          data: { $push: "$$ROOT" }
-        }
+          data: { $push: "$$ROOT" },
+        },
       },
       {
         $addFields: {
           data: {
-            $slice: ["$data", 0, 4]
-          }
-        }
+            $slice: ["$data", 0, 4],
+          },
+        },
       },
-      { $sort: { count: -1 } }
+      { $sort: { count: -1 } },
     ]);
 
     homeConfig.banners = [
       {
         thumbnail:
-          "https://storage.googleapis.com/brunch-pvt-ltd.appspot.com/banners/sintel-poster.jpg"
+          "https://storage.googleapis.com/brunch-pvt-ltd.appspot.com/banners/sintel-poster.jpg",
       },
       {
         thumbnail:
-          "https://storage.googleapis.com/brunch-pvt-ltd.appspot.com/banners/sintel-poster.jpg"
+          "https://storage.googleapis.com/brunch-pvt-ltd.appspot.com/banners/sintel-poster.jpg",
       },
       {
         thumbnail:
-          "https://storage.googleapis.com/brunch-pvt-ltd.appspot.com/banners/sintel-poster.jpg"
+          "https://storage.googleapis.com/brunch-pvt-ltd.appspot.com/banners/sintel-poster.jpg",
       },
       {
         thumbnail:
-          "https://storage.googleapis.com/brunch-pvt-ltd.appspot.com/banners/sintel-poster.jpg"
-      }
+          "https://storage.googleapis.com/brunch-pvt-ltd.appspot.com/banners/sintel-poster.jpg",
+      },
     ];
 
     homeConfig.genresData = [];
@@ -87,17 +87,17 @@ const getHomeConfig = async (req, res) => {
         title: genresTitle[genresAggregate[i]._id],
         count: genresAggregate[i].count,
         genreId: genresAggregate[i]._id,
-        data: [{ flatListData: genresAggregate[i].data }]
+        data: [{ flatListData: genresAggregate[i].data }],
       });
     }
     res.status(200).send({
       _status: "success",
-      _data: homeConfig
+      _data: homeConfig,
     });
   } catch (ex) {
     res.status(400).send({
       _status: "fail",
-      _message: ex.message
+      _message: ex.message,
     });
   }
 };
@@ -110,35 +110,38 @@ const getSearchSuggestion = async (req, res) => {
           { $text: { $search: `${req.query.searchText || ""}` } },
           { name: { $regex: `${req.query.searchText || ""}`, $options: "i" } },
           {
-            subtitle: { $regex: `${req.query.searchText || ""}`, $options: "i" }
+            subtitle: {
+              $regex: `${req.query.searchText || ""}`,
+              $options: "i",
+            },
           },
-          { body: { $regex: `${req.query.searchText || ""}`, $options: "i" } }
-        ]
+          { body: { $regex: `${req.query.searchText || ""}`, $options: "i" } },
+        ],
       },
       {
         score: { $meta: "textScore" },
         name: 1,
-        contentThumbnailUrl: 1,
-        genres: 1
+        contentTmbImgHorizontalUrl: 1,
+        genres: 1,
       }
     )
       .sort({ score: { $meta: "textScore" } })
       .limit(10);
-    const formattedData = _.map(searchResult, result => {
+    const formattedData = _.map(searchResult, (result) => {
       result.genres = _.map(
         result.genres,
-        genre => (genre = genresTitle[genre])
+        (genre) => (genre = genresTitle[genre])
       );
       return result;
     });
     res.status(200).send({
       _status: "success",
-      _data: formattedData
+      _data: formattedData,
     });
   } catch (ex) {
     res.status(400).send({
       _status: "fail",
-      _message: ex.message
+      _message: ex.message,
     });
   }
 };
@@ -146,5 +149,5 @@ const getSearchSuggestion = async (req, res) => {
 module.exports = {
   getContent,
   getHomeConfig,
-  getSearchSuggestion
+  getSearchSuggestion,
 };

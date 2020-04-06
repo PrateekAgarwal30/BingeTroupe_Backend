@@ -1,5 +1,6 @@
 #Custom 
 uploads/**/*
+contentSampleData/**/*
 yarn.lock
 # Logs
 logs

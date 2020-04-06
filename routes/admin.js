@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require("multer");
 const adminController = require("./../controllers/adminController");
 
-const contentFileFilter = function(req, file, cb) {
+const contentFileFilter = function (req, file, cb) {
   cb(null, file.mimetype === "image/png" || file.mimetype === "image/jpeg");
 };
 const contentUploadMiddleware = multer({
@@ -16,7 +16,11 @@ const contentUploadMiddleware = multer({
 
 router.post(
   "/content",
-  contentUploadMiddleware.fields([{ name: 'contentImage', maxCount: 1 }, { name: 'contentVideo', maxCount: 1 }]),
+  contentUploadMiddleware.fields([
+    { name: "contentHortizontalImg", maxCount: 1 },
+    { name: "contentVerticalImg", maxCount: 1 },
+    { name: "contentVideo", maxCount: 1 },
+  ]),
   adminController.postNewContent
 );
 
