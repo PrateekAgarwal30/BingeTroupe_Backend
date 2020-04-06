@@ -21,14 +21,53 @@ const getContent = async (req, res) => {
   try {
     let contents = null;
     let params = req.params || {};
+    let returnData = null;
     if (_.keysIn(params).length) {
       contents = await Content.find(params);
+      returnData = contents;
     } else {
       contents = await Content.find({ status: "active", ...req.query });
+      returnData = contents;
+    }
+    if (params._id && contents) {
+      contents = contents[0];
+      returnData = _.pick(contents, [
+        "_id",
+        "name",
+        "status",
+        "genres",
+        "type",
+        "subtitle",
+        "body",
+        "contentImgHorizontalUrl",
+        "contentImgVeritcalUrl",
+        "contentTmbImgHorizontalUrl",
+        "contentTmbImgVeritcalUrl",
+        "contentVideoUrl",
+        "durationinMillSec",
+        "uploadDate",
+        "releaseDate",
+        "language",
+      ]);
+      const similarContent = await Content.find(
+        {
+          $and: [
+            { genres: { $in: contents.genres } },
+            { _id: { $ne: contents._id } },
+          ],
+        },
+        {
+          name: 1,
+          contentTmbImgHorizontalUrl: 1,
+          contentTmbImgVeritcalUrl: 1,
+        }
+      ).limit(6);
+      returnData.similarContent = similarContent || [];
+      // console.log(returnData);
     }
     res.status(200).send({
       _status: "success",
-      _data: contents,
+      _data: returnData,
     });
   } catch (ex) {
     res.status(400).send({
