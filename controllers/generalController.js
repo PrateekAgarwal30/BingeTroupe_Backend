@@ -185,8 +185,25 @@ const getSearchSuggestion = async (req, res) => {
   }
 };
 
+const fetchWatchListData = async (req, res) => {
+  try {
+    const watchList = _.get(req, "body.watchList", []) || [];
+    const watchListData = await Content.find({ _id: { $in: watchList } });
+    res.status(200).send({
+      _status: "success",
+      _data: watchListData,
+    });
+  } catch (ex) {
+    res.status(400).send({
+      _status: "fail",
+      _message: ex.message,
+    });
+  }
+};
+
 module.exports = {
   getContent,
   getHomeConfig,
   getSearchSuggestion,
+  fetchWatchListData,
 };

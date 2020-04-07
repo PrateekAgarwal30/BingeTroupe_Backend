@@ -6,4 +6,5 @@ router.get("/contents", generalController.getContent);
 router.get("/contents/:_id", generalController.getContent);
 router.get("/home_config", generalController.getHomeConfig);
 router.get("/search_suggestions", generalController.getSearchSuggestion);
+router.post("/fetch_watchlist_data", generalController.fetchWatchListData);
 module.exports = router;
